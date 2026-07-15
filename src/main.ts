@@ -70,6 +70,18 @@ function scheduleValidation(delay = 450) {
   debounceTimer = window.setTimeout(runValidation, delay);
 }
 
+function setXsdStatus(text: string, kind: "info" | "warn" | "error" = "info") {
+  xsdStatusEl.textContent = text;
+  xsdStatusEl.classList.toggle("warn", kind === "warn");
+  xsdStatusEl.classList.toggle("error", kind === "error");
+}
+
+// Validate is only ever clickable when there's an unambiguous entry file --
+// with 2+ files and none chosen yet, there's nothing valid to compile.
+function syncValidateButton() {
+  btnEl.disabled = project.entry === null;
+}
+
 function switchActiveTab(name: string) {
   setActive(project, name);
   xsdView.setState(project.files.get(name)!);
@@ -113,10 +125,7 @@ function renderTabs() {
           xsdView.setState(project.files.get(project.active)!);
         }
         renderTabs();
-        if (message) {
-          xsdStatusEl.textContent = message;
-          xsdStatusEl.classList.remove("error");
-        }
+        if (message) setXsdStatus(message, "info");
         scheduleValidation(0);
       });
       tab.append(remove);
@@ -139,6 +148,11 @@ function renderTabs() {
     scheduleValidation(0);
   });
   tabsEl.appendChild(addTab);
+
+  syncValidateButton();
+  if (project.entry === null) {
+    setXsdStatus("Multiple XSD files — choose an entry file (☆) before validating.", "warn");
+  }
 }
 
 async function handleIncomingFiles(fileList: FileList) {
@@ -157,9 +171,10 @@ async function handleIncomingFiles(fileList: FileList) {
     scheduleValidation(0);
   }
 
-  if (ignored > 0) {
-    xsdStatusEl.textContent = `Ignored ${ignored} non-.xsd file${ignored === 1 ? "" : "s"}`;
-    xsdStatusEl.classList.remove("error");
+  // Don't stomp the "choose an entry file" prompt if it's now showing --
+  // that's the more actionable message when both conditions occur at once.
+  if (ignored > 0 && project.entry !== null) {
+    setXsdStatus(`Ignored ${ignored} non-.xsd file${ignored === 1 ? "" : "s"}`, "info");
   }
 }
 
@@ -196,7 +211,7 @@ function renderResult(result: ValidationResult) {
     ? allDiagnostics
         .map(
           (d) =>
-            `<div class="diagnostic"><span class="loc">[${d.severity} ${d.line}:${d.column}]</span> ${escapeHtml(d.message)}</div>`
+            `<div class="diagnostic diagnostic-${d.severity}"><span class="loc">[${d.severity} ${d.line}:${d.column}]</span> ${escapeHtml(d.message)}</div>`
         )
         .join("")
     : "";
@@ -211,11 +226,21 @@ function escapeHtml(s: string): string {
 }
 
 async function runValidation() {
+  if (project.entry === null) {
+    // Ambiguous entry -- nothing valid to compile. Leave the "choose an
+    // entry file" prompt (set by renderTabs) up rather than overwriting it.
+    resultsEl.innerHTML = `<span class="placeholder">Select an entry file to validate.</span>`;
+    applyDiagnostics(xmlView, []);
+    syncValidateButton();
+    return;
+  }
+  const entryName = project.entry;
+
   btnEl.disabled = true;
   statusEl.textContent = "compiling schema + validating…";
 
   const filesRecord = getFilesRecord(project);
-  const key = JSON.stringify({ entry: project.entry, filesRecord });
+  const key = JSON.stringify({ entry: entryName, filesRecord });
 
   try {
     if (key !== lastCompiledKey) {
@@ -225,13 +250,12 @@ async function runValidation() {
       // compile doesn't leave `validator` pointing at an already-destroyed
       // instance (which the catch block below would then double-destroy).
       const previous = validator;
-      validator = await createProjectValidator({ entry: project.entry, files: filesRecord });
+      validator = await createProjectValidator({ entry: entryName, files: filesRecord });
       previous?.destroy();
       lastCompiledKey = key;
     }
 
-    xsdStatusEl.textContent = "";
-    xsdStatusEl.classList.remove("error");
+    setXsdStatus("", "info");
 
     // Guaranteed non-null: either just created above, or left over from a
     // prior successful run (any failure resets lastCompiledKey, forcing the
@@ -242,8 +266,7 @@ async function runValidation() {
     statusEl.textContent = "";
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);
-    xsdStatusEl.textContent = message;
-    xsdStatusEl.classList.add("error");
+    setXsdStatus(message, "error");
     resultsEl.innerHTML = `<div class="result-line"><span class="badge invalid">ERROR</span>${escapeHtml(message)}</div>`;
     applyDiagnostics(xmlView, []);
     statusEl.textContent = "";
@@ -253,7 +276,7 @@ async function runValidation() {
     }
     lastCompiledKey = "";
   } finally {
-    btnEl.disabled = false;
+    syncValidateButton();
   }
 }
 

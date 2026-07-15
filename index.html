@@ -35,13 +35,17 @@
           <div class="editor-host" id="xml-editor-host"></div>
         </section>
       </main>
+    </div>
 
-      <div class="controls">
-        <button id="validate-btn">Validate</button>
-        <span id="status"></span>
+    <div class="bottom-dock">
+      <div class="dock-inner">
+        <div class="dock-bar">
+          <button id="validate-btn">Validate</button>
+          <span id="status"></span>
+          <span class="dock-title">PROBLEMS</span>
+        </div>
+        <section class="results" id="results" aria-live="polite"></section>
       </div>
-
-      <section class="results" id="results" aria-live="polite"></section>
     </div>
     <script type="module" src="/src/main.ts"></script>
   </body>

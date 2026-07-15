@@ -8,6 +8,7 @@
   --accent: #5b8cff;
   --ok: #3ecf8e;
   --err: #ff6b6b;
+  --warning: #f2b84b;
   font-family: "SF Mono", "JetBrains Mono", ui-monospace, Menlo, Consolas, monospace;
 }
 
@@ -24,6 +25,8 @@ body {
   max-width: 1100px;
   margin: 0 auto;
   padding: 2rem 1.5rem 3rem;
+  /* Leaves room so content doesn't end up hidden behind the fixed dock. */
+  padding-bottom: 320px;
 }
 
 header h1 { font-size: 1.4rem; margin: 0 0 0.4rem; }
@@ -65,7 +68,12 @@ textarea {
 textarea:focus { outline: none; border-color: var(--accent); }
 
 .editor-host { display: contents; }
-.editor-host .cm-editor { min-height: 260px; }
+.editor-host .cm-editor {
+  min-height: 260px;
+  /* Bounded so large pasted content scrolls inside the editor instead of
+     growing the page (which used to push the Validate button far below). */
+  max-height: 500px;
+}
 .editor-host .cm-scroller { overflow: auto; }
 
 .xsd-tabs {
@@ -137,12 +145,39 @@ textarea:focus { outline: none; border-color: var(--accent); }
 }
 
 .xsd-status.error { color: var(--err); }
+.xsd-status.warn { color: var(--accent); }
 
-.controls {
+.bottom-dock {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: var(--bg);
+  border-top: 1px solid var(--border);
+  box-shadow: 0 -8px 24px rgba(0, 0, 0, 0.35);
+  z-index: 10;
+}
+
+.dock-inner {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 0.75rem 1.5rem 1.25rem;
+}
+
+.dock-bar {
   display: flex;
   align-items: center;
   gap: 0.75rem;
-  margin: 1.25rem 0;
+  margin-bottom: 0.5rem;
+}
+
+.dock-title {
+  margin-left: auto;
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
 }
 
 button {
@@ -166,8 +201,10 @@ button:hover:not(:disabled) { filter: brightness(1.1); }
   border: 1px solid var(--border);
   border-radius: 8px;
   background: var(--panel);
-  padding: 1rem;
+  padding: 0.75rem 1rem;
   min-height: 3rem;
+  max-height: 220px;
+  overflow-y: auto;
   font-size: 0.85rem;
 }
 
@@ -186,7 +223,15 @@ button:hover:not(:disabled) { filter: brightness(1.1); }
 .badge.valid { background: rgba(62, 207, 142, 0.15); color: var(--ok); }
 .badge.invalid { background: rgba(255, 107, 107, 0.15); color: var(--err); }
 
-.diagnostic { color: var(--err); margin: 0.2rem 0 0 0.5rem; font-size: 0.8rem; }
+.diagnostic {
+  color: var(--err);
+  margin: 0.1rem -0.5rem 0;
+  padding: 0.25rem 0.5rem;
+  font-size: 0.8rem;
+  border-radius: 4px;
+}
+.diagnostic:hover { background: rgba(255, 255, 255, 0.04); }
 .diagnostic .loc { color: var(--muted); }
+.diagnostic-warning { color: var(--warning); }
 
 .placeholder { color: var(--muted); }
