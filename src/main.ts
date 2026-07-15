@@ -30,12 +30,16 @@ const DEFAULT_XSD = `<?xml version="1.0"?>
 const DEFAULT_XML = `<log level="full"/>\n`;
 
 const tabsEl = document.querySelector<HTMLDivElement>("#xsd-tabs")!;
-const dropzoneEl = document.querySelector<HTMLDivElement>("#xsd-dropzone")!;
-const fileInputEl = document.querySelector<HTMLInputElement>("#xsd-file-input")!;
+const xsdDropzoneEl = document.querySelector<HTMLDivElement>("#xsd-dropzone")!;
+const xsdFileInputEl = document.querySelector<HTMLInputElement>("#xsd-file-input")!;
 const xsdHostEl = document.querySelector<HTMLDivElement>("#xsd-editor-host")!;
 const xmlHostEl = document.querySelector<HTMLDivElement>("#xml-editor-host")!;
 const xsdStatusEl = document.querySelector<HTMLDivElement>("#xsd-status")!;
 const entryLabelEl = document.querySelector<HTMLSpanElement>("#entry-label")!;
+const xmlDropzoneEl = document.querySelector<HTMLDivElement>("#xml-dropzone")!;
+const xmlFileInputEl = document.querySelector<HTMLInputElement>("#xml-file-input")!;
+const xmlStatusEl = document.querySelector<HTMLDivElement>("#xml-status")!;
+const xmlFileChipEl = document.querySelector<HTMLSpanElement>("#xml-file-chip")!;
 const btnEl = document.querySelector<HTMLButtonElement>("#validate-btn")!;
 const statusEl = document.querySelector<HTMLSpanElement>("#status")!;
 const resultsEl = document.querySelector<HTMLDivElement>("#results")!;
@@ -197,26 +201,71 @@ async function handleIncomingFiles(fileList: FileList) {
   }
 }
 
-dropzoneEl.addEventListener("click", () => fileInputEl.click());
-dropzoneEl.addEventListener("dragover", (e) => {
+xsdDropzoneEl.addEventListener("click", () => xsdFileInputEl.click());
+xsdDropzoneEl.addEventListener("dragover", (e) => {
   e.preventDefault();
-  dropzoneEl.classList.add("dragover");
+  xsdDropzoneEl.classList.add("dragover");
 });
-dropzoneEl.addEventListener("dragleave", () => {
-  dropzoneEl.classList.remove("dragover");
+xsdDropzoneEl.addEventListener("dragleave", () => {
+  xsdDropzoneEl.classList.remove("dragover");
 });
-dropzoneEl.addEventListener("drop", (e) => {
+xsdDropzoneEl.addEventListener("drop", (e) => {
   e.preventDefault();
-  dropzoneEl.classList.remove("dragover");
+  xsdDropzoneEl.classList.remove("dragover");
   if (e.dataTransfer?.files.length) {
     handleIncomingFiles(e.dataTransfer.files);
   }
 });
-fileInputEl.addEventListener("change", () => {
-  if (fileInputEl.files?.length) {
-    handleIncomingFiles(fileInputEl.files);
+xsdFileInputEl.addEventListener("change", () => {
+  if (xsdFileInputEl.files?.length) {
+    handleIncomingFiles(xsdFileInputEl.files);
   }
-  fileInputEl.value = "";
+  xsdFileInputEl.value = "";
+});
+
+// XML is a single document, not a multi-file project -- dropping a file just
+// replaces its content directly, no merge-vs-replace choice to make.
+async function handleIncomingXmlFile(fileList: FileList) {
+  const files = Array.from(fileList);
+  const xmlFile = files.find((f) => f.name.toLowerCase().endsWith(".xml"));
+  const ignored = xmlFile ? files.length - 1 : files.length;
+
+  if (xmlFile) {
+    const text = await xmlFile.text();
+    xmlView.setState(createXmlState(text));
+    xmlFileChipEl.textContent = xmlFile.name;
+    xmlStatusEl.textContent = "";
+    xmlStatusEl.classList.remove("error");
+    scheduleValidation(0);
+  }
+
+  if (ignored > 0) {
+    xmlStatusEl.textContent = xmlFile
+      ? `Ignored ${ignored} extra file${ignored === 1 ? "" : "s"} — only one .xml document is validated at a time`
+      : "Only .xml files are supported here";
+  }
+}
+
+xmlDropzoneEl.addEventListener("click", () => xmlFileInputEl.click());
+xmlDropzoneEl.addEventListener("dragover", (e) => {
+  e.preventDefault();
+  xmlDropzoneEl.classList.add("dragover");
+});
+xmlDropzoneEl.addEventListener("dragleave", () => {
+  xmlDropzoneEl.classList.remove("dragover");
+});
+xmlDropzoneEl.addEventListener("drop", (e) => {
+  e.preventDefault();
+  xmlDropzoneEl.classList.remove("dragover");
+  if (e.dataTransfer?.files.length) {
+    handleIncomingXmlFile(e.dataTransfer.files);
+  }
+});
+xmlFileInputEl.addEventListener("change", () => {
+  if (xmlFileInputEl.files?.length) {
+    handleIncomingXmlFile(xmlFileInputEl.files);
+  }
+  xmlFileInputEl.value = "";
 });
 
 function renderResult(result: ValidationResult) {

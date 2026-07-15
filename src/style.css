@@ -116,6 +116,20 @@ textarea:focus { outline: none; border-color: var(--accent); }
   border-color: var(--accent);
 }
 
+/* Non-interactive lookalike for the single-file XML panel, so its row
+   structure lines up with the XSD panel's tab bar above the dropzone. */
+.file-chip {
+  display: flex;
+  align-items: center;
+  background: var(--panel);
+  border: 1px solid var(--accent);
+  border-radius: 6px;
+  color: var(--text);
+  padding: 0.3rem 0.5rem;
+  font-family: inherit;
+  font-size: 0.75rem;
+}
+
 .xsd-tab .entry-star {
   cursor: pointer;
   color: var(--muted);
