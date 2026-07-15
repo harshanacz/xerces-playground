@@ -1,0 +1,13 @@
+<?xml version="1.0"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+           targetNamespace="urn:example:address"
+           xmlns="urn:example:address"
+           elementFormDefault="qualified">
+  <xs:element name="shipTo">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element name="city" type="xs:string"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+</xs:schema>

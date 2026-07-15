@@ -1,0 +1,12 @@
+<catalog>
+  <product id="1">
+    <name>Wireless Mouse</name>
+    <price>19.99</price>
+    <category>electronics</category>
+  </product>
+  <product id="2">
+    <name>Novel</name>
+    <price>9.50</price>
+    <category>books</category>
+  </product>
+</catalog>

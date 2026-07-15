@@ -1,0 +1,17 @@
+<?xml version="1.0"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+           xmlns:addr="urn:example:address"
+           targetNamespace="urn:example:order"
+           xmlns="urn:example:order"
+           elementFormDefault="qualified">
+  <xs:import namespace="urn:example:address" schemaLocation="address.xsd"/>
+
+  <xs:element name="order">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element name="id" type="xs:string"/>
+        <xs:element ref="addr:shipTo"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+</xs:schema>

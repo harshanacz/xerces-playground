@@ -1,0 +1,7 @@
+<items>
+  <product id="1">
+    <name>Wrong Root</name>
+    <price>10.00</price>
+    <category>books</category>
+  </product>
+</items>

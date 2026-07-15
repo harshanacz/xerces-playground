@@ -1,0 +1,7 @@
+<catalog>
+  <product id="0">
+    <name>Zero Item</name>
+    <price>10.00</price>
+    <category>books</category>
+  </product>
+</catalog>

@@ -1,0 +1,7 @@
+<catalog>
+  <product id="1">
+    <name>Mystery Item</name>
+    <price>10.00</price>
+    <category>furniture</category>
+  </product>
+</catalog>
