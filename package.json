@@ -3,7 +3,7 @@
   "private": true,
   "version": "0.1.0",
   "type": "module",
-  "description": "Browser playground for xerces-wasm \u2014 paste an XSD and XML, validate entirely client-side via WebAssembly.",
+  "description": "Browser playground for xerces-wasm — paste an XSD and XML, validate entirely client-side via WebAssembly.",
   "license": "MIT",
   "scripts": {
     "dev": "vite",
@@ -17,6 +17,9 @@
     "vite": "^8.1.1"
   },
   "dependencies": {
+    "@codemirror/lang-xml": "^6.1.0",
+    "@codemirror/lint": "^6.9.7",
+    "codemirror": "^6.0.2",
     "xerces-wasm": "^2.0.0"
   }
 }

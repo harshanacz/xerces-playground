@@ -20,22 +20,44 @@
 
       <main>
         <section class="editor">
-          <label for="xsd">XSD schema (main.xsd)</label>
-          <textarea id="xsd" spellcheck="false"></textarea>
+          <div class="editor-header">
+            <label>XSD schema files</label>
+          </div>
+          <div class="xsd-tabs" id="xsd-tabs"></div>
+          <div class="dropzone" id="xsd-dropzone">
+            <span>Drop .xsd files here or click to browse</span>
+            <input type="file" id="xsd-file-input" accept=".xsd" multiple hidden />
+          </div>
+          <div class="editor-host" id="xsd-editor-host"></div>
+          <div class="xsd-status" id="xsd-status"></div>
         </section>
 
         <section class="editor">
-          <label for="xml">XML document</label>
-          <textarea id="xml" spellcheck="false"></textarea>
+          <div class="editor-header">
+            <label>XML document</label>
+          </div>
+          <div class="xsd-tabs">
+            <span class="file-chip" id="xml-file-chip">document.xml</span>
+          </div>
+          <div class="dropzone" id="xml-dropzone">
+            <span>Drop .xml file here or click to browse</span>
+            <input type="file" id="xml-file-input" accept=".xml" hidden />
+          </div>
+          <div class="editor-host" id="xml-editor-host"></div>
+          <div class="xsd-status" id="xml-status"></div>
         </section>
       </main>
+    </div>
 
-      <div class="controls">
-        <button id="validate-btn">Validate</button>
-        <span id="status"></span>
+    <div class="bottom-dock">
+      <div class="dock-inner">
+        <div class="dock-bar">
+          <button id="validate-btn">Validate manually</button>
+          <span id="status"></span>
+          <span class="dock-title">PROBLEMS</span>
+        </div>
+        <section class="results" id="results" aria-live="polite"></section>
       </div>
-
-      <section class="results" id="results" aria-live="polite"></section>
     </div>
     <script type="module" src="/src/main.ts"></script>
   </body>

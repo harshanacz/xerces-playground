@@ -1,9 +1,11 @@
 # xerces-wasm playground
 
 A tiny browser playground for [`xerces-wasm`](https://www.npmjs.com/package/xerces-wasm) —
-paste an XSD schema and an XML document, hit validate, and see pass/fail with
-line/column diagnostics. Everything runs client-side via WebAssembly; nothing
-is uploaded anywhere.
+build a multi-file XSD schema project (paste, add tabs, or drag-and-drop
+`.xsd` files) and an XML document, then validate with pass/fail and
+line/column diagnostics that update in real time as you type, with squiggly
+underlines on the XML document. Everything runs client-side via WebAssembly;
+nothing is uploaded anywhere.
 
 ## Run it
 

@@ -8,6 +8,7 @@
   --accent: #5b8cff;
   --ok: #3ecf8e;
   --err: #ff6b6b;
+  --warning: #f2b84b;
   font-family: "SF Mono", "JetBrains Mono", ui-monospace, Menlo, Consolas, monospace;
 }
 
@@ -24,6 +25,8 @@ body {
   max-width: 1100px;
   margin: 0 auto;
   padding: 2rem 1.5rem 3rem;
+  /* Leaves room so content doesn't end up hidden behind the fixed dock. */
+  padding-bottom: 320px;
 }
 
 header h1 { font-size: 1.4rem; margin: 0 0 0.4rem; }
@@ -35,16 +38,47 @@ main {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 1rem;
+  position: relative;
+}
+
+/* Vertical divider between the two columns, centered in the grid gap. */
+main::before {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 0;
+  bottom: 0;
+  width: 1px;
+  background: var(--border);
+  transform: translateX(-50%);
 }
 
 @media (max-width: 720px) {
   main { grid-template-columns: 1fr; }
+  main::before { display: none; }
 }
 
 .editor { display: flex; flex-direction: column; gap: 0.4rem; }
 .editor label {
   font-size: 0.75rem;
   color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.editor-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.entry-label {
+  margin-left: auto;
+  align-self: center;
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: var(--accent);
   text-transform: uppercase;
   letter-spacing: 0.04em;
 }
@@ -64,11 +98,133 @@ textarea {
 
 textarea:focus { outline: none; border-color: var(--accent); }
 
-.controls {
+.editor-host { display: contents; }
+.editor-host .cm-editor {
+  /* vh-based so the editor scales with the window instead of sitting at a
+     fixed size -- still bounded so large content scrolls inside the editor
+     rather than growing the page (which used to push the Validate button
+     far below). */
+  min-height: 40vh;
+  max-height: 60vh;
+}
+.editor-host .cm-scroller { overflow: auto; }
+
+.xsd-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.3rem;
+}
+
+.xsd-tab {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  color: var(--muted);
+  padding: 0.3rem 0.5rem;
+  font-family: inherit;
+  font-size: 0.75rem;
+  cursor: pointer;
+}
+
+.xsd-tab.active {
+  color: var(--text);
+  border-color: var(--accent);
+}
+
+/* Non-interactive lookalike for the single-file XML panel, so its row
+   structure lines up with the XSD panel's tab bar above the dropzone. */
+.file-chip {
+  display: flex;
+  align-items: center;
+  background: var(--panel);
+  border: 1px solid var(--accent);
+  border-radius: 6px;
+  color: var(--text);
+  padding: 0.3rem 0.5rem;
+  font-family: inherit;
+  font-size: 0.75rem;
+}
+
+.xsd-tab .entry-star {
+  cursor: pointer;
+  color: var(--muted);
+}
+
+.xsd-tab .entry-star.is-entry { color: var(--accent); }
+
+.xsd-tab .remove-btn {
+  cursor: pointer;
+  color: var(--muted);
+  font-weight: 700;
+  line-height: 1;
+}
+
+.xsd-tab .remove-btn:hover { color: var(--err); }
+
+.xsd-tab .add-btn {
+  color: var(--accent);
+  font-weight: 700;
+}
+
+.dropzone {
+  border: 1px dashed var(--border);
+  border-radius: 8px;
+  padding: 0.5rem 0.75rem;
+  font-size: 0.75rem;
+  color: var(--muted);
+  text-align: center;
+  cursor: pointer;
+}
+
+.dropzone.dragover {
+  border-color: var(--accent);
+  color: var(--accent);
+  background: rgba(91, 140, 255, 0.06);
+}
+
+.xsd-status {
+  font-size: 0.75rem;
+  color: var(--muted);
+  min-height: 1.1rem;
+}
+
+.xsd-status.error { color: var(--err); }
+.xsd-status.warn { color: var(--accent); }
+
+.bottom-dock {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: var(--bg);
+  border-top: 1px solid var(--border);
+  box-shadow: 0 -8px 24px rgba(0, 0, 0, 0.35);
+  z-index: 10;
+}
+
+.dock-inner {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 0.75rem 1.5rem 1.25rem;
+}
+
+.dock-bar {
   display: flex;
   align-items: center;
   gap: 0.75rem;
-  margin: 1.25rem 0;
+  margin-bottom: 0.5rem;
+}
+
+.dock-title {
+  margin-left: auto;
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
 }
 
 button {
@@ -92,8 +248,10 @@ button:hover:not(:disabled) { filter: brightness(1.1); }
   border: 1px solid var(--border);
   border-radius: 8px;
   background: var(--panel);
-  padding: 1rem;
+  padding: 0.75rem 1rem;
   min-height: 3rem;
+  max-height: 220px;
+  overflow-y: auto;
   font-size: 0.85rem;
 }
 
@@ -112,7 +270,15 @@ button:hover:not(:disabled) { filter: brightness(1.1); }
 .badge.valid { background: rgba(62, 207, 142, 0.15); color: var(--ok); }
 .badge.invalid { background: rgba(255, 107, 107, 0.15); color: var(--err); }
 
-.diagnostic { color: var(--err); margin: 0.2rem 0 0 0.5rem; font-size: 0.8rem; }
+.diagnostic {
+  color: var(--err);
+  margin: 0.1rem -0.5rem 0;
+  padding: 0.25rem 0.5rem;
+  font-size: 0.8rem;
+  border-radius: 4px;
+}
+.diagnostic:hover { background: rgba(255, 255, 255, 0.04); }
 .diagnostic .loc { color: var(--muted); }
+.diagnostic-warning { color: var(--warning); }
 
 .placeholder { color: var(--muted); }

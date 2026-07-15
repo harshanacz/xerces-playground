@@ -1,0 +1,7 @@
+<catalog>
+  <product id="1">
+    <name>Broken Widget</name>
+    <price>-5.00</price>
+    <category>electronics</category>
+  </product>
+</catalog>

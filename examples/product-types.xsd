@@ -1,0 +1,25 @@
+<?xml version="1.0"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
+  <xs:simpleType name="CategoryType">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="electronics"/>
+      <xs:enumeration value="books"/>
+      <xs:enumeration value="clothing"/>
+    </xs:restriction>
+  </xs:simpleType>
+
+  <xs:simpleType name="PriceType">
+    <xs:restriction base="xs:decimal">
+      <xs:minInclusive value="0"/>
+    </xs:restriction>
+  </xs:simpleType>
+
+  <xs:complexType name="ProductType">
+    <xs:sequence>
+      <xs:element name="name" type="xs:string"/>
+      <xs:element name="price" type="PriceType"/>
+      <xs:element name="category" type="CategoryType"/>
+    </xs:sequence>
+    <xs:attribute name="id" type="xs:positiveInteger" use="required"/>
+  </xs:complexType>
+</xs:schema>
