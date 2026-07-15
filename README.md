@@ -27,10 +27,35 @@ npm run preview
 npm test
 ```
 
-This runs a JSDOM-based smoke test (`test/browser-smoke.mjs`) that exercises
-the actual browser code path of `xerces-wasm` — including its relative
-`fetch()` of the `.wasm` binary — rather than just asserting the build didn't
-error.
+This runs two suites, both against the real `xerces-wasm` npm package (no
+mocks, no extra test dependencies — just Node's built-in `node:test` runner):
+
+**`test/package.test.mjs`** — 13 input→output test cases that feed XSD + XML
+into the package and assert on the `ValidationResult`, mirroring what the
+playground UI does minus the DOM:
+
+- *Single-file schema (the playground's default flow)*: valid XML returns
+  `valid: true` with no diagnostics; a missing required attribute, an
+  undeclared root element, malformed XML, and empty input each return
+  `valid: false` with the right kind of error (`schemaErrors` vs. fatal
+  `parseErrors`); diagnostics carry usable `message`/`line`/`column`/`severity`;
+  and one validator instance handles many documents in a row (the cache-reuse
+  pattern in `src/main.ts`).
+- *Multi-file schema project*: a type defined in a second file and pulled in
+  via `xs:include` resolves correctly, and its range/integer facets are
+  enforced with specific error messages.
+- *Validator lifecycle*: `reload()` genuinely swaps the schema (the old root
+  element stops validating), and an uncompilable XSD rejects at creation with
+  "failed to compile schema" (what triggers the ERROR badge in the UI).
+- *Top-level `validate()`*: the one-shot `validate(xml, xsd)` API works
+  without creating a validator instance.
+
+These run in plain Node — Emscripten falls back to loading the `.wasm` from
+disk when there's no browser, so no DOM scaffolding is needed.
+
+**`test/browser-smoke.mjs`** — a JSDOM-based smoke test that exercises the
+actual browser code path of `xerces-wasm`, including its relative `fetch()`
+of the `.wasm` binary, rather than just asserting the build didn't error.
 
 ## Notable gotchas fixed here (in case you're integrating `xerces-wasm` yourself)
 
