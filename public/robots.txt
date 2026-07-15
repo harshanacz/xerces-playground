@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://harshanacz.github.io/xerces-playground/sitemap.xml
