@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>xerces-wasm playground</title>
+  </head>
+  <body>
+    <div id="app">
+      <header>
+        <h1>xerces-wasm playground</h1>
+        <p>
+          Paste an XSD and an XML document, then validate — entirely in your
+          browser via WebAssembly. No server, no upload.
+          <a href="https://www.npmjs.com/package/xerces-wasm" target="_blank" rel="noopener">npm</a>
+          ·
+          <a href="https://github.com/harshanacz/xerces-wasm-validator" target="_blank" rel="noopener">GitHub</a>
+        </p>
+      </header>
+
+      <main>
+        <section class="editor">
+          <label for="xsd">XSD schema (main.xsd)</label>
+          <textarea id="xsd" spellcheck="false"></textarea>
+        </section>
+
+        <section class="editor">
+          <label for="xml">XML document</label>
+          <textarea id="xml" spellcheck="false"></textarea>
+        </section>
+      </main>
+
+      <div class="controls">
+        <button id="validate-btn">Validate</button>
+        <span id="status"></span>
+      </div>
+
+      <section class="results" id="results" aria-live="polite"></section>
+    </div>
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>

@@ -1,0 +1,22 @@
+{
+  "name": "xerces-wasm-playground",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "description": "Browser playground for xerces-wasm \u2014 paste an XSD and XML, validate entirely client-side via WebAssembly.",
+  "license": "MIT",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc && vite build",
+    "preview": "vite preview",
+    "test": "node test/browser-smoke.mjs"
+  },
+  "devDependencies": {
+    "jsdom": "^29.1.1",
+    "typescript": "~6.0.2",
+    "vite": "^8.1.1"
+  },
+  "dependencies": {
+    "xerces-wasm": "^2.0.0"
+  }
+}
