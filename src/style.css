@@ -52,6 +52,21 @@ main {
   letter-spacing: 0.04em;
 }
 
+.editor-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.entry-label {
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: var(--accent);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
 textarea {
   background: var(--panel);
   border: 1px solid var(--border);

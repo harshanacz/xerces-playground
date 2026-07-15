@@ -85,6 +85,20 @@ export function removeFile(project: XsdProject, name: string): string | null {
   return message;
 }
 
+// Discards the current file set entirely and replaces it with the given
+// ones (used when the user chooses "replace" for a drag-and-drop/file-picker
+// import instead of adding alongside the existing files). Unambiguous if
+// exactly one file results, otherwise the entry must be chosen explicitly.
+export function replaceFiles(project: XsdProject, entries: Array<[name: string, content: string]>): void {
+  project.files.clear();
+  for (const [name, content] of entries) {
+    project.files.set(name, createXsdState(content));
+  }
+  const names = [...project.files.keys()];
+  project.entry = names.length === 1 ? names[0] : null;
+  project.active = names[names.length - 1] ?? project.active;
+}
+
 export function setEntry(project: XsdProject, name: string): void {
   if (project.files.has(name)) {
     project.entry = name;

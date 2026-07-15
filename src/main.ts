@@ -9,6 +9,7 @@ import {
   getFilesRecord,
   addFile,
   importFile,
+  replaceFiles,
   removeFile,
   setEntry,
   setActive,
@@ -34,6 +35,7 @@ const fileInputEl = document.querySelector<HTMLInputElement>("#xsd-file-input")!
 const xsdHostEl = document.querySelector<HTMLDivElement>("#xsd-editor-host")!;
 const xmlHostEl = document.querySelector<HTMLDivElement>("#xml-editor-host")!;
 const xsdStatusEl = document.querySelector<HTMLDivElement>("#xsd-status")!;
+const entryLabelEl = document.querySelector<HTMLSpanElement>("#entry-label")!;
 const btnEl = document.querySelector<HTMLButtonElement>("#validate-btn")!;
 const statusEl = document.querySelector<HTMLSpanElement>("#status")!;
 const resultsEl = document.querySelector<HTMLDivElement>("#results")!;
@@ -149,9 +151,11 @@ function renderTabs() {
   });
   tabsEl.appendChild(addTab);
 
+  entryLabelEl.textContent = project.entry ? `ENTRY FILE: ${project.entry}` : "";
+
   syncValidateButton();
   if (project.entry === null) {
-    setXsdStatus("Multiple XSD files — choose an entry file (☆) before validating.", "warn");
+    setXsdStatus("Multiple XSD files — click ☆ on one to set it as the entry file before validating.", "warn");
   }
 }
 
@@ -160,12 +164,27 @@ async function handleIncomingFiles(fileList: FileList) {
   const xsdFiles = files.filter((f) => f.name.toLowerCase().endsWith(".xsd"));
   const ignored = files.length - xsdFiles.length;
 
-  for (const file of xsdFiles) {
-    const text = await file.text();
-    importFile(project, file.name, text);
-  }
-
   if (xsdFiles.length > 0) {
+    const contents = await Promise.all(xsdFiles.map((f) => f.text()));
+
+    const currentCount = project.files.size;
+    const addAlongside = window.confirm(
+      `Add ${xsdFiles.length} file${xsdFiles.length === 1 ? "" : "s"} to the project?\n\n` +
+        `OK — keep the current ${currentCount} file${currentCount === 1 ? "" : "s"} and add ${xsdFiles.length === 1 ? "this one" : "these"} alongside them\n` +
+        `Cancel — replace the current file${currentCount === 1 ? "" : "s"} with ${xsdFiles.length === 1 ? "this one" : "these"} instead`
+    );
+
+    if (addAlongside) {
+      for (let i = 0; i < xsdFiles.length; i++) {
+        importFile(project, xsdFiles[i].name, contents[i]);
+      }
+    } else {
+      replaceFiles(
+        project,
+        xsdFiles.map((f, i) => [f.name, contents[i]] as [string, string])
+      );
+    }
+
     xsdView.setState(project.files.get(project.active)!);
     renderTabs();
     scheduleValidation(0);
@@ -229,7 +248,7 @@ async function runValidation() {
   if (project.entry === null) {
     // Ambiguous entry -- nothing valid to compile. Leave the "choose an
     // entry file" prompt (set by renderTabs) up rather than overwriting it.
-    resultsEl.innerHTML = `<span class="placeholder">Select an entry file to validate.</span>`;
+    resultsEl.innerHTML = `<span class="placeholder">Click ☆ on an XSD file to set it as the entry file, then validation will run.</span>`;
     applyDiagnostics(xmlView, []);
     syncValidateButton();
     return;

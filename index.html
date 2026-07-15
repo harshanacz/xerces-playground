@@ -20,7 +20,10 @@
 
       <main>
         <section class="editor">
-          <label>XSD schema files</label>
+          <div class="editor-header">
+            <label>XSD schema files</label>
+            <span class="entry-label" id="entry-label"></span>
+          </div>
           <div class="xsd-tabs" id="xsd-tabs"></div>
           <div class="dropzone" id="xsd-dropzone">
             <span>Drop .xsd files here or click to browse</span>
@@ -40,7 +43,7 @@
     <div class="bottom-dock">
       <div class="dock-inner">
         <div class="dock-bar">
-          <button id="validate-btn">Validate</button>
+          <button id="validate-btn">Validate manually</button>
           <span id="status"></span>
           <span class="dock-title">PROBLEMS</span>
         </div>
