@@ -38,10 +38,24 @@ main {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 1rem;
+  position: relative;
+}
+
+/* Vertical divider between the two columns, centered in the grid gap. */
+main::before {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 0;
+  bottom: 0;
+  width: 1px;
+  background: var(--border);
+  transform: translateX(-50%);
 }
 
 @media (max-width: 720px) {
   main { grid-template-columns: 1fr; }
+  main::before { display: none; }
 }
 
 .editor { display: flex; flex-direction: column; gap: 0.4rem; }
@@ -60,6 +74,8 @@ main {
 }
 
 .entry-label {
+  margin-left: auto;
+  align-self: center;
   font-size: 0.7rem;
   font-weight: 700;
   color: var(--accent);
@@ -84,10 +100,12 @@ textarea:focus { outline: none; border-color: var(--accent); }
 
 .editor-host { display: contents; }
 .editor-host .cm-editor {
-  min-height: 260px;
-  /* Bounded so large pasted content scrolls inside the editor instead of
-     growing the page (which used to push the Validate button far below). */
-  max-height: 500px;
+  /* vh-based so the editor scales with the window instead of sitting at a
+     fixed size -- still bounded so large content scrolls inside the editor
+     rather than growing the page (which used to push the Validate button
+     far below). */
+  min-height: 40vh;
+  max-height: 60vh;
 }
 .editor-host .cm-scroller { overflow: auto; }
 

@@ -35,7 +35,6 @@ const xsdFileInputEl = document.querySelector<HTMLInputElement>("#xsd-file-input
 const xsdHostEl = document.querySelector<HTMLDivElement>("#xsd-editor-host")!;
 const xmlHostEl = document.querySelector<HTMLDivElement>("#xml-editor-host")!;
 const xsdStatusEl = document.querySelector<HTMLDivElement>("#xsd-status")!;
-const entryLabelEl = document.querySelector<HTMLSpanElement>("#entry-label")!;
 const xmlDropzoneEl = document.querySelector<HTMLDivElement>("#xml-dropzone")!;
 const xmlFileInputEl = document.querySelector<HTMLInputElement>("#xml-file-input")!;
 const xmlStatusEl = document.querySelector<HTMLDivElement>("#xml-status")!;
@@ -155,7 +154,12 @@ function renderTabs() {
   });
   tabsEl.appendChild(addTab);
 
-  entryLabelEl.textContent = project.entry ? `ENTRY FILE: ${project.entry}` : "";
+  if (project.entry) {
+    const entryLabel = document.createElement("span");
+    entryLabel.className = "entry-label";
+    entryLabel.textContent = `ENTRY FILE: ${project.entry}`;
+    tabsEl.appendChild(entryLabel);
+  }
 
   syncValidateButton();
   if (project.entry === null) {
