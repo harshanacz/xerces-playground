@@ -20,13 +20,19 @@
 
       <main>
         <section class="editor">
-          <label for="xsd">XSD schema (main.xsd)</label>
-          <textarea id="xsd" spellcheck="false"></textarea>
+          <label>XSD schema files</label>
+          <div class="xsd-tabs" id="xsd-tabs"></div>
+          <div class="dropzone" id="xsd-dropzone">
+            <span>Drop .xsd files here or click to browse</span>
+            <input type="file" id="xsd-file-input" accept=".xsd" multiple hidden />
+          </div>
+          <div class="editor-host" id="xsd-editor-host"></div>
+          <div class="xsd-status" id="xsd-status"></div>
         </section>
 
         <section class="editor">
-          <label for="xml">XML document</label>
-          <textarea id="xml" spellcheck="false"></textarea>
+          <label>XML document</label>
+          <div class="editor-host" id="xml-editor-host"></div>
         </section>
       </main>
 

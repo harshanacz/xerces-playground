@@ -64,6 +64,80 @@ textarea {
 
 textarea:focus { outline: none; border-color: var(--accent); }
 
+.editor-host { display: contents; }
+.editor-host .cm-editor { min-height: 260px; }
+.editor-host .cm-scroller { overflow: auto; }
+
+.xsd-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.3rem;
+}
+
+.xsd-tab {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  color: var(--muted);
+  padding: 0.3rem 0.5rem;
+  font-family: inherit;
+  font-size: 0.75rem;
+  cursor: pointer;
+}
+
+.xsd-tab.active {
+  color: var(--text);
+  border-color: var(--accent);
+}
+
+.xsd-tab .entry-star {
+  cursor: pointer;
+  color: var(--muted);
+}
+
+.xsd-tab .entry-star.is-entry { color: var(--accent); }
+
+.xsd-tab .remove-btn {
+  cursor: pointer;
+  color: var(--muted);
+  font-weight: 700;
+  line-height: 1;
+}
+
+.xsd-tab .remove-btn:hover { color: var(--err); }
+
+.xsd-tab .add-btn {
+  color: var(--accent);
+  font-weight: 700;
+}
+
+.dropzone {
+  border: 1px dashed var(--border);
+  border-radius: 8px;
+  padding: 0.5rem 0.75rem;
+  font-size: 0.75rem;
+  color: var(--muted);
+  text-align: center;
+  cursor: pointer;
+}
+
+.dropzone.dragover {
+  border-color: var(--accent);
+  color: var(--accent);
+  background: rgba(91, 140, 255, 0.06);
+}
+
+.xsd-status {
+  font-size: 0.75rem;
+  color: var(--muted);
+  min-height: 1.1rem;
+}
+
+.xsd-status.error { color: var(--err); }
+
 .controls {
   display: flex;
   align-items: center;

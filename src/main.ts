@@ -1,6 +1,18 @@
 import "./style.css";
+import { EditorView } from "@codemirror/view";
 import * as xercesWasm from "xerces-wasm";
 import type { ProjectValidator, ValidationResult } from "xerces-wasm";
+import { createXmlState, applyDiagnostics, toCmDiagnostics } from "./editor";
+import {
+  type XsdProject,
+  createProject,
+  getFilesRecord,
+  addFile,
+  importFile,
+  removeFile,
+  setEntry,
+  setActive,
+} from "./xsd-project";
 
 const { createProjectValidator } = xercesWasm;
 
@@ -16,36 +28,162 @@ const DEFAULT_XSD = `<?xml version="1.0"?>
 
 const DEFAULT_XML = `<log level="full"/>\n`;
 
-const xsdEl = document.querySelector<HTMLTextAreaElement>("#xsd")!;
-const xmlEl = document.querySelector<HTMLTextAreaElement>("#xml")!;
+const tabsEl = document.querySelector<HTMLDivElement>("#xsd-tabs")!;
+const dropzoneEl = document.querySelector<HTMLDivElement>("#xsd-dropzone")!;
+const fileInputEl = document.querySelector<HTMLInputElement>("#xsd-file-input")!;
+const xsdHostEl = document.querySelector<HTMLDivElement>("#xsd-editor-host")!;
+const xmlHostEl = document.querySelector<HTMLDivElement>("#xml-editor-host")!;
+const xsdStatusEl = document.querySelector<HTMLDivElement>("#xsd-status")!;
 const btnEl = document.querySelector<HTMLButtonElement>("#validate-btn")!;
 const statusEl = document.querySelector<HTMLSpanElement>("#status")!;
 const resultsEl = document.querySelector<HTMLDivElement>("#results")!;
 
-xsdEl.value = DEFAULT_XSD;
-xmlEl.value = DEFAULT_XML;
-resultsEl.innerHTML = `<span class="placeholder">Results will appear here.</span>`;
+const project: XsdProject = createProject("main.xsd", DEFAULT_XSD);
 
-// Cache the compiled grammar pool per XSD text so we don't recompile on
-// every keystroke — only when the schema itself actually changes.
-let cachedValidator: ProjectValidator | null = null;
-let cachedXsdText = "";
+const xsdView = new EditorView({
+  state: project.files.get(project.active)!,
+  parent: xsdHostEl,
+  dispatch(tr, view) {
+    view.update([tr]);
+    if (tr.docChanged) {
+      project.files.set(project.active, view.state);
+      scheduleValidation();
+    }
+  },
+});
 
-async function getValidator(xsdText: string): Promise<ProjectValidator> {
-  if (cachedValidator && cachedXsdText === xsdText) {
-    return cachedValidator;
-  }
-  if (cachedValidator) {
-    cachedValidator.destroy();
-    cachedValidator = null;
-  }
-  cachedValidator = await createProjectValidator({
-    entry: "main.xsd",
-    files: { "main.xsd": xsdText },
-  });
-  cachedXsdText = xsdText;
-  return cachedValidator;
+const xmlView = new EditorView({
+  state: createXmlState(DEFAULT_XML),
+  parent: xmlHostEl,
+  dispatch(tr, view) {
+    view.update([tr]);
+    if (tr.docChanged) scheduleValidation();
+  },
+});
+
+let validator: ProjectValidator | null = null;
+let lastCompiledKey = "";
+let debounceTimer: number | undefined;
+
+function scheduleValidation(delay = 450) {
+  window.clearTimeout(debounceTimer);
+  debounceTimer = window.setTimeout(runValidation, delay);
 }
+
+function switchActiveTab(name: string) {
+  setActive(project, name);
+  xsdView.setState(project.files.get(name)!);
+  renderTabs();
+}
+
+function renderTabs() {
+  tabsEl.innerHTML = "";
+  for (const name of project.files.keys()) {
+    const tab = document.createElement("button");
+    tab.type = "button";
+    tab.className = "xsd-tab" + (name === project.active ? " active" : "");
+
+    const star = document.createElement("span");
+    star.className = "entry-star" + (name === project.entry ? " is-entry" : "");
+    star.title = name === project.entry ? "Entry file" : "Set as entry file";
+    star.textContent = name === project.entry ? "★" : "☆";
+    star.addEventListener("click", (e) => {
+      e.stopPropagation();
+      setEntry(project, name);
+      renderTabs();
+      scheduleValidation(0);
+    });
+
+    const label = document.createElement("span");
+    label.textContent = name;
+
+    tab.append(star, label);
+
+    if (project.files.size > 1) {
+      const remove = document.createElement("span");
+      remove.className = "remove-btn";
+      remove.title = "Remove file";
+      remove.textContent = "×";
+      remove.addEventListener("click", (e) => {
+        e.stopPropagation();
+        const message = removeFile(project, name);
+        if (project.active !== name) {
+          // active didn't change; just refresh the tab list
+        } else {
+          xsdView.setState(project.files.get(project.active)!);
+        }
+        renderTabs();
+        if (message) {
+          xsdStatusEl.textContent = message;
+          xsdStatusEl.classList.remove("error");
+        }
+        scheduleValidation(0);
+      });
+      tab.append(remove);
+    }
+
+    tab.addEventListener("click", () => switchActiveTab(name));
+    tabsEl.appendChild(tab);
+  }
+
+  const addTab = document.createElement("button");
+  addTab.type = "button";
+  addTab.className = "xsd-tab add-btn";
+  addTab.textContent = "+ add file";
+  addTab.addEventListener("click", () => {
+    const name = window.prompt("New XSD filename (e.g. types.xsd):");
+    if (!name) return;
+    addFile(project, name);
+    xsdView.setState(project.files.get(project.active)!);
+    renderTabs();
+    scheduleValidation(0);
+  });
+  tabsEl.appendChild(addTab);
+}
+
+async function handleIncomingFiles(fileList: FileList) {
+  const files = Array.from(fileList);
+  const xsdFiles = files.filter((f) => f.name.toLowerCase().endsWith(".xsd"));
+  const ignored = files.length - xsdFiles.length;
+
+  for (const file of xsdFiles) {
+    const text = await file.text();
+    importFile(project, file.name, text);
+  }
+
+  if (xsdFiles.length > 0) {
+    xsdView.setState(project.files.get(project.active)!);
+    renderTabs();
+    scheduleValidation(0);
+  }
+
+  if (ignored > 0) {
+    xsdStatusEl.textContent = `Ignored ${ignored} non-.xsd file${ignored === 1 ? "" : "s"}`;
+    xsdStatusEl.classList.remove("error");
+  }
+}
+
+dropzoneEl.addEventListener("click", () => fileInputEl.click());
+dropzoneEl.addEventListener("dragover", (e) => {
+  e.preventDefault();
+  dropzoneEl.classList.add("dragover");
+});
+dropzoneEl.addEventListener("dragleave", () => {
+  dropzoneEl.classList.remove("dragover");
+});
+dropzoneEl.addEventListener("drop", (e) => {
+  e.preventDefault();
+  dropzoneEl.classList.remove("dragover");
+  if (e.dataTransfer?.files.length) {
+    handleIncomingFiles(e.dataTransfer.files);
+  }
+});
+fileInputEl.addEventListener("change", () => {
+  if (fileInputEl.files?.length) {
+    handleIncomingFiles(fileInputEl.files);
+  }
+  fileInputEl.value = "";
+});
 
 function renderResult(result: ValidationResult) {
   const badge = result.valid
@@ -75,26 +213,57 @@ function escapeHtml(s: string): string {
 async function runValidation() {
   btnEl.disabled = true;
   statusEl.textContent = "compiling schema + validating…";
+
+  const filesRecord = getFilesRecord(project);
+  const key = JSON.stringify({ entry: project.entry, filesRecord });
+
   try {
-    const validator = await getValidator(xsdEl.value);
-    const result = await validator.validate(xmlEl.value);
+    if (key !== lastCompiledKey) {
+      // reload() can't change which file is the entry, so always recreate --
+      // the cache-key check above already keeps this from running needlessly.
+      // Keep the old validator alive until the new one exists, so a failed
+      // compile doesn't leave `validator` pointing at an already-destroyed
+      // instance (which the catch block below would then double-destroy).
+      const previous = validator;
+      validator = await createProjectValidator({ entry: project.entry, files: filesRecord });
+      previous?.destroy();
+      lastCompiledKey = key;
+    }
+
+    xsdStatusEl.textContent = "";
+    xsdStatusEl.classList.remove("error");
+
+    // Guaranteed non-null: either just created above, or left over from a
+    // prior successful run (any failure resets lastCompiledKey, forcing the
+    // `if` block above to run again before this line is reached).
+    const result = await validator!.validate(xmlView.state.doc.toString());
     renderResult(result);
+    applyDiagnostics(xmlView, toCmDiagnostics(xmlView.state.doc, [...result.parseErrors, ...result.schemaErrors]));
     statusEl.textContent = "";
   } catch (err) {
-    resultsEl.innerHTML = `<div class="result-line"><span class="badge invalid">ERROR</span>${escapeHtml(
-      err instanceof Error ? err.message : String(err)
-    )}</div>`;
+    const message = err instanceof Error ? err.message : String(err);
+    xsdStatusEl.textContent = message;
+    xsdStatusEl.classList.add("error");
+    resultsEl.innerHTML = `<div class="result-line"><span class="badge invalid">ERROR</span>${escapeHtml(message)}</div>`;
+    applyDiagnostics(xmlView, []);
     statusEl.textContent = "";
-    // A schema compile failure invalidates the cache so the next attempt
-    // recompiles instead of reusing a broken validator.
-    cachedValidator = null;
-    cachedXsdText = "";
+    if (validator) {
+      validator.destroy();
+      validator = null;
+    }
+    lastCompiledKey = "";
   } finally {
     btnEl.disabled = false;
   }
 }
 
-btnEl.addEventListener("click", runValidation);
+btnEl.addEventListener("click", () => {
+  window.clearTimeout(debounceTimer);
+  runValidation();
+});
+
+resultsEl.innerHTML = `<span class="placeholder">Results will appear here.</span>`;
+renderTabs();
 
 // Validate once on load so the page isn't empty on first paint.
 runValidation();
