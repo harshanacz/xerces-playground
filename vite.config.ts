@@ -10,7 +10,4 @@ export default defineConfig({
       "fs/promises": path.resolve(__dirname, "src/empty-shim.ts"),
     },
   },
-  optimizeDeps: {
-    exclude: ["xerces-wasm"],
-  },
 });

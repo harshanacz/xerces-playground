@@ -1,5 +1,8 @@
 import "./style.css";
-import { createProjectValidator, type ProjectValidator, type ValidationResult } from "xerces-wasm";
+import * as xercesWasm from "xerces-wasm";
+import type { ProjectValidator, ValidationResult } from "xerces-wasm";
+
+const { createProjectValidator } = xercesWasm;
 
 const DEFAULT_XSD = `<?xml version="1.0"?>
 <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
