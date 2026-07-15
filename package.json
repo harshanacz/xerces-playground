@@ -9,7 +9,7 @@
     "dev": "vite",
     "build": "tsc && vite build",
     "preview": "vite preview",
-    "test": "node test/browser-smoke.mjs"
+    "test": "node --test test/package.test.mjs && node test/browser-smoke.mjs"
   },
   "devDependencies": {
     "jsdom": "^29.1.1",
