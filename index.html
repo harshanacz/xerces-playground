@@ -86,32 +86,24 @@
     </script>
   </head>
   <body>
-    <div id="app">
-      <header class="hero">
-        <nav class="hero-nav">
-          <span class="brand">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 12l2 2 4-4"/><circle cx="12" cy="12" r="9"/></svg>
-            xerces-wasm
-          </span>
-          <span class="hero-links">
-            <a href="https://www.npmjs.com/package/xerces-wasm" target="_blank" rel="noopener">npm</a>
-            <a href="https://github.com/harshanacz/xerces-wasm-validator" target="_blank" rel="noopener">GitHub</a>
-          </span>
+    <header class="site-header">
+      <div class="header-inner">
+        <h1 class="brand">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 12l2 2 4-4"/><circle cx="12" cy="12" r="9"/></svg>
+          Free XSD Validator
+        </h1>
+        <nav class="nav-links">
+          <a href="https://www.npmjs.com/package/xerces-wasm" target="_blank" rel="noopener">npm</a>
+          <a href="https://github.com/harshanacz/xerces-wasm-validator" target="_blank" rel="noopener">GitHub</a>
         </nav>
+      </div>
+    </header>
 
-        <div class="hero-badge">100% free · no upload · no sign-up</div>
-        <h1>Free XSD Validator</h1>
-        <p class="tagline">
-          Validate XML against XSD schemas using <strong>Apache Xerces</strong> compiled to
-          WebAssembly. Everything runs in your browser — your files never leave your device.
-        </p>
-        <ul class="features">
-          <li>Private — nothing is uploaded</li>
-          <li>Multi-file schemas (<code>xs:include</code> / <code>xs:import</code>)</li>
-          <li>Live validation as you type</li>
-          <li>Open source</li>
-        </ul>
-      </header>
+    <div id="app">
+      <p class="powered-by">
+        Powered by <a href="https://www.npmjs.com/package/xerces-wasm" target="_blank" rel="noopener">xerces-wasm</a> npm package
+        <span class="powered-by-tags">· Open source · Fully local running</span>
+      </p>
 
       <main>
         <section class="editor panel">
@@ -191,7 +183,10 @@
     <div class="bottom-dock">
       <div class="dock-inner">
         <div class="dock-bar">
-          <button id="validate-btn">Validate now</button>
+          <div class="validate-group">
+            <button id="validate-btn">Manually Validate</button>
+            <span class="validate-hint">When you edit the text area, it auto-validates in real time.</span>
+          </div>
           <span id="status"></span>
           <span class="dock-title">PROBLEMS</span>
         </div>
