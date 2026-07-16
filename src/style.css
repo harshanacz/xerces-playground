@@ -34,6 +34,23 @@ header p { color: var(--muted); font-size: 0.85rem; margin: 0 0 1.5rem; }
 header a { color: var(--accent); text-decoration: none; }
 header a:hover { text-decoration: underline; }
 
+.limitations {
+  margin-top: 2rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--border);
+  color: var(--muted);
+  font-size: 0.7rem;
+  line-height: 1.6;
+}
+.limitations strong { color: var(--text); }
+.limitations code {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 3px;
+  padding: 0.05rem 0.3rem;
+  font-size: 0.68rem;
+}
+
 main {
   display: grid;
   grid-template-columns: 1fr 1fr;
