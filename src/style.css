@@ -149,12 +149,12 @@ main {
 
 .editor-host { display: contents; }
 .editor-host .cm-editor {
-  /* vh-based so the editor scales with the window instead of sitting at a
-     fixed size -- still bounded so large content scrolls inside the editor
-     rather than growing the page (which used to push the Validate button
-     far below). */
-  min-height: 36vh;
-  max-height: 55vh;
+  /* Fixed flex basis (not content-sized) so typing never resizes the editor
+     or shifts the layout; content scrolls inside instead. flex-grow lets the
+     shorter panel's editor absorb leftover height so both panels' bottoms
+     stay aligned even when one has an extra wrapped row of file tabs. */
+  flex: 1 0 auto;
+  height: 46vh;
   border: 1px solid var(--border);
   border-radius: 12px;
   overflow: hidden;
@@ -378,14 +378,31 @@ main {
   gap: 0.35rem;
 }
 
+.validate-group button {
+  padding: 0.38rem 0.95rem;
+  font-size: 0.78rem;
+}
+
 .validate-hint {
   font-size: 0.72rem;
   color: var(--muted);
   letter-spacing: -0.005em;
 }
 
-.dock-title {
+.dock-summary {
   margin-left: auto;
+  display: flex;
+  gap: 0.6rem;
+  font-family: var(--mono);
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.summary-err { color: var(--err); }
+.summary-warn { color: var(--warning); }
+.summary-ok { color: var(--ok); }
+
+.dock-title {
   font-size: 0.7rem;
   font-weight: 600;
   color: var(--muted);
@@ -410,6 +427,41 @@ button {
 button:disabled { opacity: 0.4; cursor: default; }
 button:hover:not(:disabled) { background: #2094ff; }
 button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+.dock-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border-radius: 8px;
+  color: var(--muted);
+  padding: 0.3rem;
+}
+
+.dock-toggle:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--text);
+}
+
+.dock-toggle svg {
+  width: 16px;
+  height: 16px;
+  transition: transform 0.2s ease;
+}
+
+/* ---------- Minimized dock (VSCode-style collapsed panel) ---------- */
+
+.bottom-dock.minimized .results,
+.bottom-dock.minimized .validate-hint {
+  display: none;
+}
+
+.bottom-dock.minimized .dock-bar { margin-bottom: 0; }
+.bottom-dock.minimized .dock-inner { padding: 0.5rem 1.5rem; }
+.bottom-dock.minimized .dock-toggle svg { transform: rotate(180deg); }
+
+/* Red hairline on the collapsed bar so errors stay visible at a glance. */
+.bottom-dock.has-errors { border-top-color: rgba(255, 69, 58, 0.55); }
 
 #status { font-size: 0.8rem; color: var(--muted); }
 

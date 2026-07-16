@@ -42,6 +42,28 @@ const xmlFileChipEl = document.querySelector<HTMLSpanElement>("#xml-file-chip")!
 const btnEl = document.querySelector<HTMLButtonElement>("#validate-btn")!;
 const statusEl = document.querySelector<HTMLSpanElement>("#status")!;
 const resultsEl = document.querySelector<HTMLDivElement>("#results")!;
+const dockEl = document.querySelector<HTMLDivElement>(".bottom-dock")!;
+const dockToggleEl = document.querySelector<HTMLButtonElement>("#dock-toggle")!;
+const dockSummaryEl = document.querySelector<HTMLSpanElement>("#dock-summary")!;
+
+dockToggleEl.addEventListener("click", () => {
+  const minimized = dockEl.classList.toggle("minimized");
+  dockToggleEl.setAttribute("aria-expanded", String(!minimized));
+});
+
+// VSCode-style problems summary — stays visible even when the dock is
+// minimized, so error counts are never hidden.
+function updateDockSummary(errors: number, warnings: number) {
+  dockEl.classList.toggle("has-errors", errors > 0);
+  if (errors === 0 && warnings === 0) {
+    dockSummaryEl.innerHTML = `<span class="summary-ok">✓ no problems</span>`;
+    return;
+  }
+  let html = "";
+  if (errors > 0) html += `<span class="summary-err">✕ ${errors}</span>`;
+  if (warnings > 0) html += `<span class="summary-warn">⚠ ${warnings}</span>`;
+  dockSummaryEl.innerHTML = html;
+}
 
 const project: XsdProject = createProject("main.xsd", DEFAULT_XSD);
 
@@ -279,6 +301,9 @@ function renderResult(result: ValidationResult) {
 
   const allDiagnostics = [...result.parseErrors, ...result.schemaErrors];
 
+  const warnCount = allDiagnostics.filter((d) => d.severity === "warning").length;
+  updateDockSummary(allDiagnostics.length - warnCount, warnCount);
+
   const diagnosticsHtml = allDiagnostics.length
     ? allDiagnostics
         .map(
@@ -302,6 +327,8 @@ async function runValidation() {
     // Ambiguous entry -- nothing valid to compile. Leave the "choose an
     // entry file" prompt (set by renderTabs) up rather than overwriting it.
     resultsEl.innerHTML = `<span class="placeholder">Click ☆ on an XSD file to set it as the entry file, then validation will run.</span>`;
+    dockSummaryEl.innerHTML = "";
+    dockEl.classList.remove("has-errors");
     applyDiagnostics(xmlView, []);
     syncValidateButton();
     return;
@@ -340,6 +367,7 @@ async function runValidation() {
     const message = err instanceof Error ? err.message : String(err);
     setXsdStatus(message, "error");
     resultsEl.innerHTML = `<div class="result-line"><span class="badge invalid">ERROR</span>${escapeHtml(message)}</div>`;
+    updateDockSummary(1, 0);
     applyDiagnostics(xmlView, []);
     statusEl.textContent = "";
     if (validator) {

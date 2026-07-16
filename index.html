@@ -184,11 +184,15 @@
       <div class="dock-inner">
         <div class="dock-bar">
           <div class="validate-group">
-            <button id="validate-btn">Manually Validate</button>
+            <button id="validate-btn">Validate Again</button>
             <span class="validate-hint">When you edit the text area, it auto-validates in real time.</span>
           </div>
           <span id="status"></span>
+          <span class="dock-summary" id="dock-summary"></span>
           <span class="dock-title">PROBLEMS</span>
+          <button type="button" class="dock-toggle" id="dock-toggle" aria-label="Toggle problems panel" aria-expanded="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6" /></svg>
+          </button>
         </div>
         <section class="results" id="results" aria-live="polite"></section>
       </div>
