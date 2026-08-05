@@ -2,9 +2,8 @@ import { defineConfig } from "vite";
 import path from "node:path";
 
 export default defineConfig({
-  // Served from https://harshanacz.github.io/xerces-playground/ (a project
-  // page, not a user page), so assets must resolve under this subpath.
-  base: "/xerces-playground/",
+  // Use relative base path so assets load correctly on any domain/host (Vercel, GitHub Pages, etc.)
+  base: process.env.VERCEL ? "/" : "./",
   resolve: {
     alias: {
       // xerces-wasm's dist/index.js imports fs/promises for a Node-only
