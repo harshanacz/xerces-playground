@@ -390,3 +390,20 @@ renderTabs();
 
 // Validate once on load so the page isn't empty on first paint.
 runValidation();
+
+// Fetch GitHub star count dynamically
+async function fetchGithubStars() {
+  try {
+    const res = await fetch("https://api.github.com/repos/harshanacz/xerces-wasm-validator");
+    if (res.ok) {
+      const data = await res.json();
+      const countEl = document.getElementById("star-count-text");
+      if (countEl && typeof data.stargazers_count === "number") {
+        countEl.textContent = data.stargazers_count.toString();
+      }
+    }
+  } catch (_err) {
+    // Keep fallback star count on error
+  }
+}
+fetchGithubStars();
