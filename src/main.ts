@@ -227,6 +227,34 @@ async function handleIncomingFiles(fileList: FileList) {
   }
 }
 
+let dragCounter = 0;
+
+window.addEventListener("dragenter", (e) => {
+  if (e.dataTransfer?.types.includes("Files")) {
+    dragCounter++;
+    document.body.classList.add("dragging-file");
+  }
+});
+
+window.addEventListener("dragleave", (e) => {
+  if (e.dataTransfer?.types.includes("Files")) {
+    dragCounter--;
+    if (dragCounter <= 0) {
+      dragCounter = 0;
+      document.body.classList.remove("dragging-file");
+    }
+  }
+});
+
+window.addEventListener("dragover", (e) => {
+  e.preventDefault();
+});
+
+window.addEventListener("drop", () => {
+  dragCounter = 0;
+  document.body.classList.remove("dragging-file");
+});
+
 xsdDropzoneEl.addEventListener("click", () => xsdFileInputEl.click());
 xsdDropzoneEl.addEventListener("dragover", (e) => {
   e.preventDefault();
